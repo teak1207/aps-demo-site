@@ -14,5 +14,6 @@ model User {
   password   String
   name       String
   role       String   @default("USER")
+  department String?  @default("미지정")
   createdAt  DateTime @default(now())
 }
