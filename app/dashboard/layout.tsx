@@ -28,7 +28,7 @@ export default async function DashboardLayout({
                 href="/dashboard"
                 className="text-xl md:text-2xl font-black text-blue-600 tracking-tight"
               >
-                APS <span className="text-gray-800">DEMO</span>
+                APS <span className="text-gray-800"></span>
               </Link>
 
               {/* PC용 메뉴 (모바일에서는 숨김) */}

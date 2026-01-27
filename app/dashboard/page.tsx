@@ -8,7 +8,9 @@ export default async function DashboardPage() {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
   });
-
+  const totalUsers = users.length;
+  const departments = new Set(users.map((u) => u.department).filter(Boolean))
+    .size;
   return (
     <div className="p-4 md:p-8 space-y-8 bg-gray-50 min-h-screen">
       {/* 헤더 섹션 */}
@@ -166,6 +168,27 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
+
+      <div className="p-4 md:p-8 space-y-8 bg-gray-50 min-h-screen">
+        {/* 통계 섹션 (상용 사이트 느낌 핵심) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <p className="text-sm font-medium text-gray-500">총 임직원</p>
+            <p className="text-3xl font-black text-blue-600 mt-1">
+              {totalUsers}명
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <p className="text-sm font-medium text-gray-500">운영 부서</p>
+            <p className="text-3xl font-black text-green-600 mt-1">
+              {departments}개
+            </p>
+          </div>
+          {/* 추가하고 싶은 통계가 있다면 여기에 더 넣을 수 있습니다 */}
+        </div>
+
+        {/* ... 기존 등록 폼 및 목록 섹션 ... */}
+      </div>
     </div>
   );
 }
