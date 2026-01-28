@@ -1,193 +1,157 @@
 // app/dashboard/page.tsx
-import { prisma } from "../lib/prisma";
-import { createUser, updateUser } from "./actions"; // 경로 확인: 현재 폴더의 actions.ts
-import DeleteButton from "./DeleteButtton"; // 방금 만든 클라이언트 버튼
+import { getWeatherData } from "./action"; // 🔍 여기서 파일명이 action인지 actions인지 꼭 확인!
+import { getExchangeRate } from "./exchangeAction";
+import { getNewsFeed } from "./newsAction";
+import { prisma } from "../../app/lib/prisma";
+import {
+  Users,
+  Newspaper,
+  TrendingUp,
+  CloudSun,
+  ExternalLink,
+} from "lucide-react";
 
 export default async function DashboardPage() {
-  // 서버에서 유저 목록 가져오기
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  const totalUsers = users.length;
-  const departments = new Set(users.map((u) => u.department).filter(Boolean))
-    .size;
+  // 데이터 병렬 호출
+  const [userCount, weatherData, exchangeRate, newsList] = await Promise.all([
+    prisma.user.count().catch(() => 0),
+    getWeatherData().catch(() => null),
+    getExchangeRate().catch(() => null),
+    getNewsFeed().catch(() => []),
+  ]);
+
+  // 안전장치: 데이터가 없을 경우 빈 값 처리
+  const safeNewsList = newsList || [];
+
   return (
-    <div className="p-4 md:p-8 space-y-8 bg-gray-50 min-h-screen">
-      {/* 헤더 섹션 */}
-      <div className="border-b border-gray-300 pb-4">
-        <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">
-          👤 임직원 관리
+    <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
+      <header>
+        <h2 className="text-3xl font-black text-gray-900">
+          📊 비즈니스 대시보드
         </h2>
-        <p className="text-sm md:text-base text-gray-600 mt-2">
-          모바일과 PC 어디서든 수정이 가능합니다.
-        </p>
+        <p className="text-gray-500 mt-1">실시간 주요 지표 및 뉴스 현황</p>
+      </header>
+
+      {/* 상단 3개 카드 섹션 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 1. 전체 임직원 현황 */}
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-5">
+          <div className="bg-blue-50 p-4 rounded-2xl">
+            <Users className="w-8 h-8 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+              전체 사원
+            </p>
+            <p className="text-3xl font-black text-gray-800">{userCount}명</p>
+          </div>
+        </div>
+
+        {/* 2. 환율 정보 */}
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-5">
+          <div className="bg-emerald-50 p-4 rounded-2xl">
+            <TrendingUp className="w-8 h-8 text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+              환율 (USD/KRW)
+            </p>
+            <p className="text-3xl font-black text-gray-800">
+              {exchangeRate
+                ? `₩${exchangeRate.toLocaleString()}`
+                : "연동 중..."}
+            </p>
+          </div>
+        </div>
+
+        {/* 3. 날씨 정보 */}
+        <div className="bg-gradient-to-br from-sky-400 to-blue-600 p-6 rounded-3xl shadow-lg text-white flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold opacity-80 uppercase tracking-wider">
+              {weatherData?.name === "Hwaseong-si"
+                ? "화성 동탄"
+                : weatherData?.name || "위치 확인 중"}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-4xl font-black">
+                {weatherData ? Math.round(weatherData.main.temp) : "--"}°
+              </span>
+              <span className="text-sm font-medium opacity-90">
+                {weatherData?.weather[0].description}
+              </span>
+            </div>
+          </div>
+          {weatherData && (
+            <img
+              src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png`}
+              alt="날씨"
+              className="w-16 h-16 drop-shadow-md"
+            />
+          )}
+        </div>
       </div>
 
-      {/* 등록 폼 (Create) - 모바일에서는 세로, PC에서는 가로 레이아웃 */}
-      <section className="bg-white p-5 rounded-xl border-2 border-blue-500 shadow-md">
-        <h3 className="text-lg font-bold text-blue-700 mb-4">신규 등록</h3>
-        <form action={createUser} className="flex flex-col md:flex-row gap-3">
-          <input
-            name="loginId"
-            placeholder="아이디"
-            className="border-2 border-gray-300 p-2 rounded-lg flex-1 text-gray-900 font-medium"
-            required
-          />
-          <input
-            name="name"
-            placeholder="성명"
-            className="border-2 border-gray-300 p-2 rounded-lg flex-1 text-gray-900 font-medium"
-            required
-          />
-          <input
-            name="department"
-            placeholder="부서명"
-            className="border-2 border-gray-300 p-2 rounded-lg flex-1 text-gray-900 font-medium"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="비밀번호"
-            className="border-2 border-gray-300 p-2 rounded-lg flex-1 text-gray-900 font-medium"
-            required
-          />
-          <button
-            type="submit"
-            className="bg-blue-700 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-800 transition-all"
-          >
-            등록
-          </button>
-        </form>
-      </section>
-
-      {/* 목록 섹션 (반응형 테이블/카드) */}
-      <section className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-300">
-        {/* 1. PC용 테이블 뷰 (md 이상에서 노출) */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-800 text-white font-bold">
-              <tr>
-                <th className="p-5 w-1/4 text-center">아이디</th>
-                <th className="p-5 w-1/4">성명</th>
-                <th className="p-5 w-1/4">부서명</th>
-                <th className="p-5 w-1/4 text-center">액션</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-2 divide-gray-100">
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-blue-50 transition-colors"
+      {/* 하단 섹션: 뉴스 피드 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+          <h3 className="text-xl font-black text-gray-800 flex items-center gap-2 mb-6">
+            <Newspaper className="w-6 h-6 text-gray-400" /> 주요 비즈니스 뉴스
+          </h3>
+          <div className="space-y-6">
+            {/* 🔍 여기서 newsList 대신 safeNewsList를 사용하여 에러 방지 */}
+            {safeNewsList.length > 0 ? (
+              safeNewsList.map((news: any, idx: number) => (
+                <a
+                  key={idx}
+                  href={news.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block"
                 >
-                  <td className="p-5 text-center font-black text-gray-900">
-                    {user.loginId}
-                  </td>
-                  <td colSpan={3} className="p-0">
-                    <form
-                      action={updateUser.bind(null, user.id)}
-                      className="flex items-center w-full p-5 gap-6"
-                    >
-                      <input
-                        name="name"
-                        defaultValue={user.name}
-                        className="text-gray-800 font-bold border-b-2 border-transparent focus:border-blue-600 outline-none p-1 w-32 bg-transparent"
-                      />
-                      <input
-                        name="department"
-                        defaultValue={user.department || ""}
-                        className="text-gray-800 font-bold border-b-2 border-transparent focus:border-blue-600 outline-none p-1 flex-1 bg-transparent"
-                        placeholder="부서 미지정"
-                      />
-                      <div className="flex gap-3">
-                        <button
-                          type="submit"
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-md font-bold text-sm"
-                        >
-                          저장
-                        </button>
-                        <DeleteButton userId={user.id} />
-                      </div>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* 2. 모바일용 카드 뷰 (md 미만에서 노출) */}
-        <div className="md:hidden divide-y-4 divide-gray-100">
-          {users.map((user) => (
-            <div key={user.id} className="p-5 bg-white space-y-4">
-              <div className="flex justify-between items-center border-b pb-2">
-                <span className="text-blue-700 font-black text-xl">
-                  {user.loginId}
-                </span>
-                <span className="text-xs text-gray-400">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </span>
+                  <div className="flex justify-between items-start gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-gray-700 group-hover:text-blue-600 transition-colors line-clamp-1 text-lg">
+                        {news.title}
+                      </h4>
+                      <p className="text-sm text-gray-400 flex items-center gap-2">
+                        <span className="font-semibold text-gray-500">
+                          {news.source?.name || news.source}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {news.publishedAt
+                            ? new Date(news.publishedAt).toLocaleDateString()
+                            : ""}
+                        </span>
+                      </p>
+                    </div>
+                    <ExternalLink className="w-5 h-5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </a>
+              ))
+            ) : (
+              <div className="py-10 text-center text-gray-400">
+                최신 뉴스를 가져오는 중이거나 데이터가 없습니다.
               </div>
-
-              <form
-                action={updateUser.bind(null, user.id)}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase">
-                      성명
-                    </label>
-                    <input
-                      name="name"
-                      defaultValue={user.name}
-                      className="border-2 border-gray-200 p-2 rounded-lg text-gray-900 font-bold focus:border-blue-500 outline-none"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase">
-                      부서
-                    </label>
-                    <input
-                      name="department"
-                      defaultValue={user.department || ""}
-                      className="border-2 border-gray-200 p-2 rounded-lg text-gray-900 font-bold focus:border-blue-500 outline-none"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow-md active:bg-green-800"
-                  >
-                    저장
-                  </button>
-                  <DeleteButton userId={user.id} />
-                </div>
-              </form>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <div className="p-4 md:p-8 space-y-8 bg-gray-50 min-h-screen">
-        {/* 통계 섹션 (상용 사이트 느낌 핵심) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">총 임직원</p>
-            <p className="text-3xl font-black text-blue-600 mt-1">
-              {totalUsers}명
-            </p>
+            )}
           </div>
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">운영 부서</p>
-            <p className="text-3xl font-black text-green-600 mt-1">
-              {departments}개
-            </p>
-          </div>
-          {/* 추가하고 싶은 통계가 있다면 여기에 더 넣을 수 있습니다 */}
         </div>
 
-        {/* ... 기존 등록 폼 및 목록 섹션 ... */}
+        {/* 사이드바 알림 */}
+        <div className="bg-gray-800 p-8 rounded-3xl text-white shadow-xl">
+          <h3 className="text-lg font-bold mb-4">📢 시스템 알림</h3>
+          <ul className="space-y-4 text-sm opacity-80">
+            <li className="border-l-2 border-blue-400 pl-3">
+              사용자 관리 기능이 업데이트 되었습니다.
+            </li>
+            <li className="border-l-2 border-emerald-400 pl-3">
+              실시간 환율 API 연동 완료
+            </li>
+            <li className="border-l-2 border-amber-400 pl-3">
+              서버 안정성 점검 예정: 금일 오후 11시
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

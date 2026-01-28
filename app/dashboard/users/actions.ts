@@ -1,7 +1,7 @@
 // app/dashboard/actions.ts
 "use server";
 
-import { prisma } from "../lib/prisma";
+import { prisma } from "../../lib/prisma";
 import { revalidatePath } from "next/cache";
 
 // 1. 사용자 삭제 (Delete)

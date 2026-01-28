@@ -32,7 +32,7 @@ export default async function DashboardLayout({
               </Link>
 
               {/* PC용 메뉴 (모바일에서는 숨김) */}
-              <nav className="hidden md:ml-10 md:flex space-x-6">
+              <nav className=" md:ml-10 md:flex space-x-6">
                 <Link
                   href="/dashboard"
                   className="text-gray-900 px-3 py-2 font-bold hover:text-blue-600 transition"
@@ -40,7 +40,7 @@ export default async function DashboardLayout({
                   대시보드
                 </Link>
                 <Link
-                  href="/dashboard/users"
+                  href="dashboard/users"
                   className="text-gray-500 hover:text-blue-600 px-3 py-2 font-bold transition"
                 >
                   사용자 관리
