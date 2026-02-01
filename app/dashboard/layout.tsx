@@ -45,6 +45,12 @@ export default async function DashboardLayout({
                 >
                   사용자 관리
                 </Link>
+                <Link
+                  href="/reservations"
+                  className="text-gray-500 hover:text-blue-600 px-3 py-2 font-bold transition"
+                >
+                  예약관리
+                </Link>
               </nav>
             </div>
 

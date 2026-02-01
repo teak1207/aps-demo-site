@@ -1,4 +1,5 @@
 // prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,11 +10,34 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  loginId    String   @unique
-  password   String
-  name       String
-  role       String   @default("USER")
-  department String?  @default("미지정")
-  createdAt  DateTime @default(now())
+  id           Int           @id @default(autoincrement())
+  loginId      String        @unique
+  password     String
+  name         String
+  role         String        @default("USER")
+  department   String?       @default("미지정")
+  createdAt    DateTime      @default(now())
+  // 예약과의 관계 추가 (선택사항이나 권장)
+  reservations Reservation[] 
+}
+
+model Room {
+  id           Int           @id @default(autoincrement())
+  name         String
+  type         String
+  capacity     Int
+  reservations Reservation[]
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement())
+  roomId    Int
+  room      Room     @relation(fields: [roomId], references: [id])
+  userId    Int      // User.id가 Int이므로 Int로 맞춰야 합니다.
+  user      User     @relation(fields: [userId], references: [id])
+  userName  String
+  checkIn   DateTime
+  checkOut  DateTime
+  status    String   @default("CONFIRMED")
+  createdAt DateTime @default(now())
 }

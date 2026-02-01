@@ -16,7 +16,7 @@ export default async function HomePage() {
             <span className="text-blue-600">더 스마트하게.</span>
           </h1>
           <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-            APS DEMO SITE는 직관적인 UI와 실시간 데이터 동기화를 통해
+            APS SITE는 직관적인 UI와 실시간 데이터 동기화를 통해
             <br className="hidden md:block" />
             기업의 인사 관리를 혁신적으로 단순화합니다.
           </p>
