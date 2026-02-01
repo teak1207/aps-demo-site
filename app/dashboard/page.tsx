@@ -96,7 +96,7 @@ export default async function DashboardPage() {
 
       {/* 하단 섹션: 뉴스 피드 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-100">
+        <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-4xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-lg md:text-xl font-black text-gray-800 flex items-center gap-2">
               <Newspaper className="w-5 h-5 md:w-6 md:h-6 text-blue-600" /> 주요
