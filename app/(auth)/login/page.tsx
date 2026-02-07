@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg border border-gray-100">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          사내 시스템 로그인
+          자체개발 시스템
         </h2>
 
         {/* 에러 메시지 표시창 */}
@@ -46,21 +46,21 @@ export default function LoginPage() {
               type="text"
               required
               className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500"
-              placeholder="아이디 (admin)"
+              placeholder="아이디"
             />
             <input
               name="password"
               type="password"
               required
               className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500"
-              placeholder="비밀번호 (1234)"
+              placeholder="비밀번호 "
             />
           </div>
           <button
             type="submit"
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
           >
-            로그인 하기
+            로그인
           </button>
         </form>
       </div>
